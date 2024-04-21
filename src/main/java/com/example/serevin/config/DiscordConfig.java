@@ -1,0 +1,30 @@
+package com.example.serevin.config;
+
+import com.example.serevin.discord.CommandListener;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.JDA;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+
+
+@Configuration
+public class DiscordConfig {
+
+    @Value("${discord.token}")
+    private String botToken;
+
+    @Bean
+    public JDA jda(CommandListener commandListener) {
+        try {
+            JDA jda = JDABuilder.createDefault(botToken)
+                    .addEventListeners(commandListener)
+                    .build();
+            return jda;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Не удалось инициализировать JDA", e);
+        }
+    }
+}
