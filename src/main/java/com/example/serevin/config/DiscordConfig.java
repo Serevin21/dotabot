@@ -16,10 +16,9 @@ public class DiscordConfig {
     private String botToken;
 
     @Bean
-    public JDA jda(CommandListener commandListener) {
+    public JDA jda() {
         try {
             JDA jda = JDABuilder.createDefault(botToken)
-                    .addEventListeners(commandListener)
                     .build();
             return jda;
         } catch (Exception e) {

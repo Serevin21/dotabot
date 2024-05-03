@@ -2,7 +2,9 @@ package com.example.serevin.discord;
 
 import com.example.serevin.database.model.Player;
 import com.example.serevin.database.service.PlayerService;
+import jakarta.annotation.PostConstruct;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -26,8 +28,13 @@ import java.util.stream.Collectors;
 public class CommandListener extends ListenerAdapter {
     @Autowired
     PlayerService playerService;
+    @Autowired
+    private JDA jda;
     private static boolean commandsRegistered = false;
-
+    @PostConstruct
+    public void init() {
+        this.jda.addEventListener(this);
+    }
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         String command = event.getName();
@@ -86,12 +93,27 @@ public class CommandListener extends ListenerAdapter {
             EmbedBuilder embed = new EmbedBuilder();
             List<Player> players = playerService.getAllPlayers();
 
+            String idPlayers = players.stream()
+                    .map(id -> String.format(
+                            String.valueOf(id.getPlayerId())))
+                    .collect(Collectors.joining("\n"));
+            String namePlayers = players.stream()
+                    .map(name -> String.format(
+                            name.getName()))
+                    .collect(Collectors.joining("\n"));
+            String lastMathId = players.stream()
+                    .map(mathId -> String.format(
+                            String.valueOf(mathId.getLastMatchId())))
+                    .collect(Collectors.joining("\n"));
+
             if (players.isEmpty()) {
                 embed.setDescription("Список игроков пуст.");
                 embed.setColor(Color.RED);
             } else {
-                embed.setTitle("Список ID Игроков");
-                embed.setDescription(players.stream().map(String::valueOf).collect(Collectors.joining(", ")));
+                embed.setTitle("Список: ");
+                embed.addField("name", namePlayers ,true);
+                embed.addField("id", idPlayers ,true);
+                embed.addField("lastMatch", lastMathId ,true);
                 embed.setColor(Color.GREEN);
             }
             event.replyEmbeds(embed.build()).setEphemeral(true).queue();

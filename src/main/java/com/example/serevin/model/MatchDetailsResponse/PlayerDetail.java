@@ -4,6 +4,7 @@ import java.util.List;
 
 public record PlayerDetail(
         long account_id,
+        int team_number,
         int hero_id,
         int item_0,
         int item_1,
