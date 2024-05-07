@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class Dota2ItemService {
@@ -30,20 +31,19 @@ public class Dota2ItemService {
         response.forEach((key, valueMap) -> {
             Item item = new Item();
             item.setId((Integer) valueMap.get("id"));
-//            item.setDname((String) valueMap.get("dname"));
             item.setImageUrl("https://steamcdn-a.akamaihd.net" + (String) valueMap.get("img"));
             itemCache.put(item.getId(), item);
         });
     }
-    public Item getItemById(int id) {
+    public Optional<Item>  getItemById(int id) {
         Item item = itemCache.get(id);
         if (item == null) {
             loadItems();
             item = itemCache.get(id);
             if (item == null) {
-                throw new RuntimeException("Item with ID " + id + " not found");
+                return Optional.empty();
             }
         }
-        return item;
+        return Optional.of(item);
     }
 }

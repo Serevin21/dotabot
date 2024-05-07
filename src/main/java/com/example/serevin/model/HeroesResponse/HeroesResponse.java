@@ -11,7 +11,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HeroesResponse {
     private Result result;
-
     @Getter
     @Setter
     @RequiredArgsConstructor

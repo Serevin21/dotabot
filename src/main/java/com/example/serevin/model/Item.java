@@ -9,6 +9,5 @@ import lombok.Setter;
 @RequiredArgsConstructor
 public class Item {
     private int id;
-    private String dname;
     private String imageUrl;
 }

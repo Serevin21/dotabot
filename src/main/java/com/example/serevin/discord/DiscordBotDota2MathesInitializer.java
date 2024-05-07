@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,7 +61,15 @@ public class DiscordBotDota2MathesInitializer extends ListenerAdapter  {
         List<Player> players = playerRepository.findAll();
         for (Player player : players) {
             List<Match> matches = matchesService.getPlayerMatches(player.getPlayerId());
-            if(!matches.isEmpty() && matches.get(0).match_id() != player.getLastMatchId()){
+            int status = matchesService.pageCheck(player.getPlayerId()).status();
+
+            if(status == 15){
+                EmbedBuilder embedBuilder = new EmbedBuilder()
+                        .setTitle("Игрок " + player.getName() + " закрыл свою историю матчей или не существует.")
+                                .setColor(Color.RED);
+                channel.sendMessage("").setEmbeds(embedBuilder.build()).queue();
+                playerRepository.delete(player);
+            } else if(!matches.isEmpty() && status == 1 && matches.get(0).match_id() != player.getLastMatchId()){
                 Match latestMatch = matches.get(0);
 
                 MatchDetailResponse matchDetail = detailService.getMatchDetails(latestMatch.match_id());
@@ -126,15 +135,29 @@ public class DiscordBotDota2MathesInitializer extends ListenerAdapter  {
         ).collect(Collectors.joining("\n"));
     }
     private List<String> getItemUrls(PlayerDetail playerDetail) {
-        return Arrays.asList(
-                dota2ItemService.getItemById(playerDetail.item_0()).getImageUrl(),
-                dota2ItemService.getItemById(playerDetail.item_1()).getImageUrl(),
-                dota2ItemService.getItemById(playerDetail.item_2()).getImageUrl(),
-                dota2ItemService.getItemById(playerDetail.item_3()).getImageUrl(),
-                dota2ItemService.getItemById(playerDetail.item_4()).getImageUrl(),
-                dota2ItemService.getItemById(playerDetail.item_5()).getImageUrl(),
-                dota2ItemService.getItemById(playerDetail.item_neutral()).getImageUrl()
-        );
+        ArrayList<String> strings = new ArrayList<>();
+        dota2ItemService.getItemById(playerDetail.item_0()).ifPresent(item -> {
+            strings.add(item.getImageUrl());
+        });
+        dota2ItemService.getItemById(playerDetail.item_1()).ifPresent(item -> {
+            strings.add(item.getImageUrl());
+        });
+        dota2ItemService.getItemById(playerDetail.item_2()).ifPresent(item -> {
+            strings.add(item.getImageUrl());
+        });
+        dota2ItemService.getItemById(playerDetail.item_3()).ifPresent(item -> {
+            strings.add(item.getImageUrl());
+        });
+        dota2ItemService.getItemById(playerDetail.item_4()).ifPresent(item -> {
+            strings.add(item.getImageUrl());
+        });
+        dota2ItemService.getItemById(playerDetail.item_5()).ifPresent(item -> {
+            strings.add(item.getImageUrl());
+        });
+        dota2ItemService.getItemById(playerDetail.item_neutral()).ifPresent(item -> {
+            strings.add(item.getImageUrl());
+        });
+        return strings;
     }
     private String uploadItemBuild(List<String> itemUrls){
         File file;

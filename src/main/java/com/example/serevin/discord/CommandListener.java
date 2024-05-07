@@ -5,7 +5,6 @@ import com.example.serevin.database.service.PlayerService;
 import jakarta.annotation.PostConstruct;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -30,11 +29,11 @@ public class CommandListener extends ListenerAdapter {
     PlayerService playerService;
     @Autowired
     private JDA jda;
-    private static boolean commandsRegistered = false;
     @PostConstruct
     public void init() {
         this.jda.addEventListener(this);
     }
+
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         String command = event.getName();
@@ -56,7 +55,7 @@ public class CommandListener extends ListenerAdapter {
                     embed.setColor((Color.RED));
                 }
                 event.replyEmbeds(embed.build()).setEphemeral(true).queue();
-            } catch (Exception e){
+            } catch (Exception e) {
                 event.reply("Произошла ошибка: " + e.getMessage()).setEphemeral(true).queue();
                 e.printStackTrace();
             }
@@ -111,34 +110,26 @@ public class CommandListener extends ListenerAdapter {
                 embed.setColor(Color.RED);
             } else {
                 embed.setTitle("Список: ");
-                embed.addField("name", namePlayers ,true);
-                embed.addField("id", idPlayers ,true);
-                embed.addField("lastMatch", lastMathId ,true);
+                embed.addField("name", namePlayers, true);
+                embed.addField("id", idPlayers, true);
+                embed.addField("lastMatch", lastMathId, true);
                 embed.setColor(Color.GREEN);
             }
             event.replyEmbeds(embed.build()).setEphemeral(true).queue();
         }
     }
+
     @Override
     public void onGuildReady(@NotNull GuildReadyEvent event) {
-        if (!commandsRegistered) {
-            Guild guild = event.getGuild();
-            List<CommandData> commandData = new ArrayList<>();
-            commandData.add(Commands.slash("listidplayers", "Список id"));
+        List<CommandData> commandData = new ArrayList<>();
+        commandData.add(Commands.slash("listidplayers", "Список id"));
+        commandData.add(Commands.slash("addidplayers", "Добавляет игрока в репозиторий")
+                .addOptions(new OptionData(OptionType.INTEGER, "id", "ID игрока", true),
+                        new OptionData(OptionType.STRING, "name", "Имя игрока", true),
+                        new OptionData(OptionType.INTEGER, "last_match_id", "ID последнего матча", true)));
+        commandData.add(Commands.slash("removeidplayers", "Удаляет игрока из репозитория при помощи ID")
+                .addOption(OptionType.STRING, "id", "id игрока", true));
 
-            commandData.add(Commands.slash("addidplayers", "Добавляет игрока в репозиторий")
-                    .addOptions(new OptionData(OptionType.INTEGER, "id", "ID игрока", true),
-                            new OptionData(OptionType.STRING, "name", "Имя игрока", true),
-                            new OptionData(OptionType.INTEGER, "last_match_id", "ID последнего матча", true)));
-            commandData.add(Commands.slash("removeidplayers", "Удаляет игрока из репозитория при помощи ID")
-                    .addOption(OptionType.STRING, "id", "id игрока", true));
-            guild.updateCommands().addCommands(commandData).queue(
-                    success -> {
-                        System.out.println("Commands registered successfully");
-                        commandsRegistered = true;
-                    },
-                    error -> System.err.println("Error occurred while registering commands: " + error.getMessage())
-            );
-        }
+        event.getGuild().updateCommands().addCommands(commandData).queue();
     }
 }
