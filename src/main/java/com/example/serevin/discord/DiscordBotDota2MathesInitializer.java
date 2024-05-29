@@ -2,6 +2,7 @@ package com.example.serevin.discord;
 
 import com.example.serevin.database.model.Player;
 import com.example.serevin.database.repository.PlayerRepository;
+import com.example.serevin.model.Item;
 import com.example.serevin.model.MatchDetailsResponse.MatchDetailResponse;
 import com.example.serevin.model.MatchDetailsResponse.PlayerDetail;
 import com.example.serevin.model.MatchResponse.Match;
@@ -23,9 +24,12 @@ import org.springframework.stereotype.Component;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -73,18 +77,21 @@ public class DiscordBotDota2MathesInitializer extends ListenerAdapter  {
                 Match latestMatch = matches.get(0);
 
                 MatchDetailResponse matchDetail = detailService.getMatchDetails(latestMatch.match_id());
-                PlayerDetail playerDetail = detailService.getMatchDetails(latestMatch.match_id()).detailResult().players().stream()
+                PlayerDetail playerDetail = detailService.getMatchDetails(latestMatch.match_id()).players().stream()
                         .filter(p -> player.getPlayerId().equals(p.account_id()))
                         .findFirst()
                         .orElse(null);
 
                 if(playerDetail != null) {
+                    LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Moscow"));
+                    String formattedDateTime = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+                    String matchid = String.valueOf(matchDetail.match_id());
                     String heroNameById = heroNameService.getHeroNameById(playerDetail.hero_id());
                     String heroImageUrlById = heroImageService.getHeroImageUrlById(playerDetail.hero_id());
-                    String matchResult = getPlayerMatchResult(matchDetail.detailResult().radiant_win(), playerDetail.team_number());
+                    String matchResult = getPlayerMatchResult(matchDetail.radiant_win(), playerDetail.team_number());
                     String rankName = playerRankService.getRankName(playerDetail.account_id());
-                    String matchDuration = formatDuration(matchDetail.detailResult().duration());
-                    String imageItemBuild = uploadItemBuild(getItemUrls(playerDetail));
+                    String matchDuration = formatDuration(matchDetail.duration());
+                    String imageItemBuild = uploadItemBuild(getItemUrls(playerDetail),getItemNeutralUrl(playerDetail));
                     String damageString = stringDamageColumn(playerDetail);
                     String economyString = stringEconomyColumn(playerDetail);
                     Color messageColor = matchResult.equals("Win") ? Color.GREEN : Color.RED;
@@ -94,6 +101,7 @@ public class DiscordBotDota2MathesInitializer extends ListenerAdapter  {
                             .setThumbnail(heroImageUrlById)
                             .setImage(imageItemBuild)
                             .setColor(messageColor)
+                            .setFooter(formattedDateTime + " *  id:" + matchid)
                             .addField("Damage", damageString, true)
                             .addField("Economy", economyString, true)
                             .setDescription("Match Duration: "+ matchDuration + "\n" + "\n" + " [Dotabuff](https://www.dotabuff.com/matches/"
@@ -154,15 +162,16 @@ public class DiscordBotDota2MathesInitializer extends ListenerAdapter  {
         dota2ItemService.getItemById(playerDetail.item_5()).ifPresent(item -> {
             strings.add(item.getImageUrl());
         });
-        dota2ItemService.getItemById(playerDetail.item_neutral()).ifPresent(item -> {
-            strings.add(item.getImageUrl());
-        });
         return strings;
     }
-    private String uploadItemBuild(List<String> itemUrls){
+    private String getItemNeutralUrl(PlayerDetail playerDetail) {
+        Optional<Item> neutralItem = dota2ItemService.getItemById(playerDetail.item_neutral());
+        return neutralItem.map(item -> item.getImageUrl().toString()).orElse(null);
+    }
+    private String uploadItemBuild(List<String> itemUrls, String neutralItemUrl){
         File file;
         try {
-            file = imageMergerService.mergeImages(itemUrls);
+            file = imageMergerService.mergeImages(itemUrls, neutralItemUrl);
             return imgurService.uploadImage(file);
         } catch (IOException | JSONException e) {
             throw new RuntimeException(e);

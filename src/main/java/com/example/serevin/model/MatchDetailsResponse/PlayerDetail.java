@@ -13,6 +13,9 @@ public record PlayerDetail(
         int item_4,
         int item_5,
         int item_neutral,
+        int backpack_0,
+        int backpack_1,
+        int backpack_2,
         int kills,
         int deaths,
         int assists,
@@ -22,9 +25,13 @@ public record PlayerDetail(
         int xp_per_min,
         int level,
         int net_worth,
+        int aghanims_scepter,
+        int aghanims_shard,
+        int moonshard,
         int hero_damage,
         int tower_damage,
         int hero_healing,
-        List<AbilityUpgrade> abilityUpgrades
+        int win,
+        int lose
 ) {
 }

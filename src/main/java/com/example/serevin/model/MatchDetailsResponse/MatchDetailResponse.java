@@ -1,6 +1,16 @@
 package com.example.serevin.model.MatchDetailsResponse;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-public record MatchDetailResponse(@JsonProperty("result")DetailResult detailResult) {}
+import java.util.List;
+public record MatchDetailResponse(
+        List<PlayerDetail> players,
+        long start_time,
+        boolean radiant_win,
+        long match_id,
+        long match_seq_num,
+        int game_mode,
+        int duration,
+        int path,
+        int region
+) {
+}
 

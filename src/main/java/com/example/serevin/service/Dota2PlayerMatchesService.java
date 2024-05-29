@@ -15,6 +15,7 @@ public class Dota2PlayerMatchesService {
 
     private final RestTemplate restTemplate;
     private final String apiKey;
+    private final String gameMode = "22,2,16"; // All Pick 22 , Captains Mode 2, Random Draft 16
 
     public Dota2PlayerMatchesService(RestTemplate restTemplate, @Value("${steam.api.key}") String apiKey) {
         this.restTemplate = restTemplate;
@@ -25,6 +26,7 @@ public class Dota2PlayerMatchesService {
         String url = "https://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/";
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
                 .queryParam("key", apiKey)
+                .queryParam("game_mode",gameMode)
                 .queryParam("account_id", accountId);
 
         MatchResponse response = restTemplate.getForObject(builder.toUriString(), MatchResponse.class);
@@ -35,6 +37,7 @@ public class Dota2PlayerMatchesService {
         String url = "https://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/";
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
                 .queryParam("key", apiKey)
+                .queryParam("game_mode",gameMode)
                 .queryParam("account_id", accountId);
 
         MatchResponse response = restTemplate.getForObject(builder.toUriString(), MatchResponse.class);

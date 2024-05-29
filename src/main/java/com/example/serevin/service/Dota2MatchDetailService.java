@@ -13,17 +13,24 @@ public class Dota2MatchDetailService {
     private final RestTemplate restTemplate;
     private final String apiKey;
 
+    private final String baseUrl = "https://api.opendota.com/api/matches/";
+
     public Dota2MatchDetailService(RestTemplate restTemplate, @Value("${steam.api.key}") String apiKey) {
         this.restTemplate = restTemplate;
         this.apiKey = apiKey;
     }
 
     public MatchDetailResponse getMatchDetails(long matchId) {
-        String url = "https://api.steampowered.com/IDOTA2Match_570/GetMatchDetails/V001/";
-        UriComponents uri = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("match_id", matchId)
-                .queryParam("key", apiKey)
-                .build();
-        return restTemplate.getForObject(uri.toUriString(), MatchDetailResponse.class);
+        String url = baseUrl + matchId;
+        return restTemplate.getForObject(url, MatchDetailResponse.class);
     }
+
+//    public MatchDetailResponse getMatchDetails(long matchId) {
+//        String url = "https://api.steampowered.com/IDOTA2Match_570/GetMatchDetails/V001/";
+//        UriComponents uri = UriComponentsBuilder.fromHttpUrl(url)
+//                .queryParam("match_id", matchId)
+//                .queryParam("key", apiKey)
+//                .build();
+//        return restTemplate.getForObject(uri.toUriString(), MatchDetailResponse.class);
+//    }
 }
