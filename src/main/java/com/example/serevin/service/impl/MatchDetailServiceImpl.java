@@ -1,6 +1,7 @@
 package com.example.serevin.service.impl;
 
 import com.example.serevin.model.MatchDetailsResponse.MatchDetailResponse;
+import com.example.serevin.service.MatchDetailService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -9,12 +10,13 @@ import java.util.NoSuchElementException;
 
 @Slf4j
 @Service
-public class Dota2MatchDetailService {
+public class MatchDetailServiceImpl implements MatchDetailService {
     private final RestTemplate restTemplate;
     private final String baseUrl = "https://api.opendota.com/api/matches/";
-    public Dota2MatchDetailService(RestTemplate restTemplate) {
+    public MatchDetailServiceImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
+    @Override
     public MatchDetailResponse getMatchDetails(long matchId) {
         String url = baseUrl + matchId;
         try {

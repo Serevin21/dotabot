@@ -1,5 +1,6 @@
-package com.example.serevin.discord;
+package com.example.serevin.discord.handlers;
 
+import com.example.serevin.discord.CommandHandler;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Service;
 import java.awt.*;
 
 @Service
-public class InfoCommandHandler implements CommandHandler{
+public class InfoCommandHandler implements CommandHandler {
 
     @Override
     public void handle(SlashCommandInteractionEvent event) {

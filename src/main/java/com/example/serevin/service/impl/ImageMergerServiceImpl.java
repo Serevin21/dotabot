@@ -1,5 +1,6 @@
 package com.example.serevin.service.impl;
 
+import com.example.serevin.service.ImageMergerService;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
@@ -13,7 +14,7 @@ import java.net.URL;
 import java.util.List;
 
 @Service
-public class ImageMergerService {
+public class ImageMergerServiceImpl implements ImageMergerService {
     public File mergeImages(List<String> itemUrls, String neutralItemUrl) throws IOException {
         if ((itemUrls == null || itemUrls.isEmpty()) && (neutralItemUrl == null || neutralItemUrl.isEmpty())) {
             return createEmptyImage();

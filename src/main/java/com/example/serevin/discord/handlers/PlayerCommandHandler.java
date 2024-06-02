@@ -1,7 +1,8 @@
-package com.example.serevin.discord;
+package com.example.serevin.discord.handlers;
 
-import com.example.serevin.database.model.Player;
-import com.example.serevin.database.service.PlayerService;
+import com.example.serevin.discord.CommandHandler;
+import com.example.serevin.entity.Player;
+import com.example.serevin.service.impl.PlayerServiceImpl;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 @Service
 public class PlayerCommandHandler implements CommandHandler {
     @Autowired
-    private PlayerService playerService;
+    private PlayerServiceImpl playerService;
     @Override
     public void handle(SlashCommandInteractionEvent event) {
         String command = event.getName();

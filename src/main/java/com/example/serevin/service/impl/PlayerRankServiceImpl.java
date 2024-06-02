@@ -1,6 +1,7 @@
 package com.example.serevin.service.impl;
 
 import com.example.serevin.model.PlayerRank;
+import com.example.serevin.service.PlayerRankService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,14 +10,13 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 @Slf4j
 @Service
-public class Dota2PlayerRankService {
+public class PlayerRankServiceImpl implements PlayerRankService {
     private final RestTemplate restTemplate;
-
     @Autowired
-    public Dota2PlayerRankService(RestTemplate restTemplate) {
+    public PlayerRankServiceImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
-
+    @Override
     public String getRankName(long accountId) {
         String url = "https://api.opendota.com/api/players/" + accountId;
         try {
@@ -33,7 +33,6 @@ public class Dota2PlayerRankService {
             throw new RuntimeException("Unexpected error occurred while fetching player profile");
         }
     }
-
     private String mapRankTierToName(Integer rankTier, Integer leaderboardRank) {
         if (rankTier == null) return "Unknown Rank";
         int rank = rankTier / 10;

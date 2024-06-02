@@ -1,6 +1,7 @@
 package com.example.serevin.service.impl;
 
 import com.example.serevin.model.Item;
+import com.example.serevin.service.ItemService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,12 +14,12 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class Dota2ItemService {
+public class ItemServiceImpl implements ItemService {
     private final RestTemplate restTemplate;
     private Map<Integer, Item> itemCache;
 
     @Autowired
-    public Dota2ItemService(RestTemplate restTemplate) {
+    public ItemServiceImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
         loadItems();
     }
@@ -44,6 +45,8 @@ public class Dota2ItemService {
             itemCache.put(item.getId(), item);
         });
     }
+
+    @Override
     public Optional<Item>  getItemById(int id) {
         Item item = itemCache.get(id);
         if (item == null) {

@@ -1,7 +1,7 @@
 package com.example.serevin.discord;
 
-import com.example.serevin.database.model.Player;
-import com.example.serevin.database.repository.PlayerRepository;
+import com.example.serevin.entity.Player;
+import com.example.serevin.repository.PlayerRepository;
 import com.example.serevin.model.Item;
 import com.example.serevin.model.MatchDetailsResponse.MatchDetailResponse;
 import com.example.serevin.model.MatchDetailsResponse.PlayerDetail;
@@ -36,14 +36,14 @@ import java.util.stream.Stream;
 @Component
 public class DiscordBotDota2MathesInitializer extends ListenerAdapter  {
     @Autowired private JDA jda;
-    @Autowired private Dota2PlayerMatchesService matchesService;
-    @Autowired private Dota2MatchDetailService detailService;
+    @Autowired private PlayerMatchesServiceImpl matchesService;
+    @Autowired private MatchDetailServiceImpl detailService;
     @Autowired private PlayerRepository playerRepository;
-    private Dota2HeroService dota2HeroService;
-    @Autowired private Dota2ItemService dota2ItemService;
-    @Autowired private ImageMergerService imageMergerService;
-    @Autowired private ImgurService imgurService;
-    @Autowired private Dota2PlayerRankService playerRankService;
+    private HeroServiceImpl dota2HeroService;
+    @Autowired private ItemServiceImpl dota2ItemService;
+    @Autowired private ImageMergerServiceImpl imageMergerService;
+    @Autowired private ImgurServiceImpl imgurService;
+    @Autowired private PlayerRankServiceImpl playerRankService;
     @Value("${discord.id.server}") private String GUILD_ID;
     private static final String CHANNEL_NAME = "dotamatches";
     @PostConstruct
@@ -64,7 +64,7 @@ public class DiscordBotDota2MathesInitializer extends ListenerAdapter  {
         List<Player> players = playerRepository.findAll();
         for (Player player : players) {
             List<Match> matches = matchesService.getPlayerRankedMatches(player.getPlayerId());
-            int status = matchesService.pageCheck(player.getPlayerId()).status();
+            int status = matchesService.getStatusPageAPI(player.getPlayerId()).status();
 
             if(status == 15){
                 EmbedBuilder embedBuilder = new EmbedBuilder()

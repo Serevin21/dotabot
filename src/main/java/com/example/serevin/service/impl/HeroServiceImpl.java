@@ -11,11 +11,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @Service
-public class Dota2HeroService implements HeroService {
+public class HeroServiceImpl implements HeroService {
     private final String apiKey;
     private final RestTemplate restTemplate;
 
-    public Dota2HeroService(RestTemplate restTemplate, @Value("${steam.api.key}") String apiKey) {
+    public HeroServiceImpl(RestTemplate restTemplate, @Value("${steam.api.key}") String apiKey) {
         this.restTemplate = restTemplate;
         this.apiKey = apiKey;
     }

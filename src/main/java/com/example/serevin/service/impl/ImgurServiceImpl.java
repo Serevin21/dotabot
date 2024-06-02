@@ -1,5 +1,6 @@
 package com.example.serevin.service.impl;
 
+import com.example.serevin.service.ImgurService;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,12 +22,12 @@ import java.io.IOException;
 
 @Slf4j
 @Service
-public class ImgurService {
+public class ImgurServiceImpl implements ImgurService {
     private final RestTemplate restTemplate;
     @Value("${imgur.client.id}")
     private String clientId;
 
-    public ImgurService(RestTemplate restTemplate) {
+    public ImgurServiceImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 

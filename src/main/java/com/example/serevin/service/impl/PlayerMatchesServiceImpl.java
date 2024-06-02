@@ -16,11 +16,11 @@ import java.util.NoSuchElementException;
 
 @Slf4j
 @Service
-public class Dota2PlayerMatchesService {
+public class PlayerMatchesServiceImpl {
     private final RestTemplate restTemplate;
     private final String apiKey;
 
-    public Dota2PlayerMatchesService(RestTemplate restTemplate, @Value("${steam.api.key}") String apiKey) {
+    public PlayerMatchesServiceImpl(RestTemplate restTemplate, @Value("${steam.api.key}") String apiKey) {
         this.restTemplate = restTemplate;
         this.apiKey = apiKey;
     }
@@ -49,15 +49,8 @@ public class Dota2PlayerMatchesService {
         }
         return playerRankedMatches;
     }
-    private boolean isRankedMatch(Match match) {
-        int lobby_type = match.lobby_type();
-        if (lobby_type >= 7 && lobby_type <=9){
-            return true;
-        } else {
-            return false;
-        }
-    }
-    public Result pageCheck(long accountId) {
+
+    public Result getStatusPageAPI(long accountId) {
         String url = "https://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/";
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
                 .queryParam("key", apiKey)
@@ -74,5 +67,12 @@ public class Dota2PlayerMatchesService {
             throw new IllegalStateException("Error occurred while checking player matches (pageCheck)");
         }
     }
-
+    private boolean isRankedMatch(Match match) {
+        int lobby_type = match.lobby_type();
+        if (lobby_type >= 7 && lobby_type <=9){
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

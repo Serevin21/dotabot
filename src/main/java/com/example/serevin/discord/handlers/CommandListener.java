@@ -1,5 +1,6 @@
-package com.example.serevin.discord;
+package com.example.serevin.discord.handlers;
 
+import com.example.serevin.discord.CommandHandler;
 import jakarta.annotation.PostConstruct;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;

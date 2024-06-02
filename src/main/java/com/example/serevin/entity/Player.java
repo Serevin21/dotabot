@@ -1,4 +1,4 @@
-package com.example.serevin.database.model;
+package com.example.serevin.entity;
 
 import lombok.*;
 
