@@ -1,4 +1,4 @@
-package com.example.serevin.service;
+package com.example.serevin.service.impl;
 
 import org.springframework.stereotype.Service;
 

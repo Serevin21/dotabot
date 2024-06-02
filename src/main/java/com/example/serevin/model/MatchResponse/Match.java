@@ -3,7 +3,6 @@ package com.example.serevin.model.MatchResponse;
 import java.util.List;
 
 public record Match(
-
         long match_id,
         long match_seq_num,
         int start_time,

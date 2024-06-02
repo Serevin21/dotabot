@@ -1,5 +1,6 @@
-package com.example.serevin.service;
+package com.example.serevin.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+@Slf4j
 @Service
 public class ImgurService {
     private final RestTemplate restTemplate;
@@ -52,7 +54,13 @@ public class ImgurService {
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-        ResponseEntity<String> response = restTemplate.postForEntity("https://api.imgur.com/3/upload", requestEntity, String.class);
+        ResponseEntity<String> response;
+        try {
+            response = restTemplate.postForEntity("https://api.imgur.com/3/upload", requestEntity, String.class);
+        } catch (Exception e) {
+            log.error("Error occurred while uploading image to Imgur", e);
+            throw new IOException("Error occurred while uploading image to Imgur", e);
+        }
         return extractUrlFromResponse(response.getBody());
     }
 

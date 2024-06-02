@@ -1,6 +1,7 @@
-package com.example.serevin.service;
+package com.example.serevin.service.impl;
 
 import com.example.serevin.model.Item;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class Dota2ItemService {
     private final RestTemplate restTemplate;
@@ -22,11 +24,18 @@ public class Dota2ItemService {
     }
     @Scheduled(fixedDelay = 86400000) // 24 hours
     public void reloadItems() {
+        log.info("Reloading items from the API");
         loadItems();
     }
+
     private void loadItems() {
         String url = "https://api.opendota.com/api/constants/items";
-        Map<String, Map<String, Object>> response = restTemplate.getForObject(url, Map.class);
+        Map<String, Map<String, Object>> response = null;
+        try {
+            response = restTemplate.getForObject(url, Map.class);
+        } catch (Exception e){
+            log.error("Error when getting data about items from the API", e);
+        }
         itemCache = new HashMap<>();
         response.forEach((key, valueMap) -> {
             Item item = new Item();

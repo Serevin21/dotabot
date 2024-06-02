@@ -6,7 +6,7 @@ import com.example.serevin.model.Item;
 import com.example.serevin.model.MatchDetailsResponse.MatchDetailResponse;
 import com.example.serevin.model.MatchDetailsResponse.PlayerDetail;
 import com.example.serevin.model.MatchResponse.Match;
-import com.example.serevin.service.*;
+import com.example.serevin.service.impl.*;
 import jakarta.annotation.PostConstruct;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
@@ -39,12 +39,11 @@ public class DiscordBotDota2MathesInitializer extends ListenerAdapter  {
     @Autowired private Dota2PlayerMatchesService matchesService;
     @Autowired private Dota2MatchDetailService detailService;
     @Autowired private PlayerRepository playerRepository;
-    @Autowired private Dota2HeroNameService heroNameService;
-    @Autowired private Dota2HeroImageService heroImageService;
+    private Dota2HeroService dota2HeroService;
     @Autowired private Dota2ItemService dota2ItemService;
     @Autowired private ImageMergerService imageMergerService;
     @Autowired private ImgurService imgurService;
-    @Autowired private PlayerRankService playerRankService;
+    @Autowired private Dota2PlayerRankService playerRankService;
     @Value("${discord.id.server}") private String GUILD_ID;
     private static final String CHANNEL_NAME = "dotamatches";
     @PostConstruct
@@ -64,7 +63,7 @@ public class DiscordBotDota2MathesInitializer extends ListenerAdapter  {
         TextChannel channel = setupDotaMatchesChannel();
         List<Player> players = playerRepository.findAll();
         for (Player player : players) {
-            List<Match> matches = matchesService.getPlayerMatches(player.getPlayerId());
+            List<Match> matches = matchesService.getPlayerRankedMatches(player.getPlayerId());
             int status = matchesService.pageCheck(player.getPlayerId()).status();
 
             if(status == 15){
@@ -75,7 +74,6 @@ public class DiscordBotDota2MathesInitializer extends ListenerAdapter  {
                 playerRepository.delete(player);
             } else if(!matches.isEmpty() && status == 1 && matches.get(0).match_id() != player.getLastMatchId()){
                 Match latestMatch = matches.get(0);
-
                 MatchDetailResponse matchDetail = detailService.getMatchDetails(latestMatch.match_id());
                 PlayerDetail playerDetail = detailService.getMatchDetails(latestMatch.match_id()).players().stream()
                         .filter(p -> player.getPlayerId().equals(p.account_id()))
@@ -86,8 +84,8 @@ public class DiscordBotDota2MathesInitializer extends ListenerAdapter  {
                     LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Moscow"));
                     String formattedDateTime = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
                     String matchid = String.valueOf(matchDetail.match_id());
-                    String heroNameById = heroNameService.getHeroNameById(playerDetail.hero_id());
-                    String heroImageUrlById = heroImageService.getHeroImageUrlById(playerDetail.hero_id());
+                    String heroNameById = dota2HeroService.getHeroNameById(playerDetail.hero_id());
+                    String heroImageUrlById = dota2HeroService.getHeroImageUrlById(playerDetail.hero_id());
                     String matchResult = getPlayerMatchResult(matchDetail.radiant_win(), playerDetail.team_number());
                     String rankName = playerRankService.getRankName(playerDetail.account_id());
                     String matchDuration = formatDuration(matchDetail.duration());
@@ -101,7 +99,7 @@ public class DiscordBotDota2MathesInitializer extends ListenerAdapter  {
                             .setThumbnail(heroImageUrlById)
                             .setImage(imageItemBuild)
                             .setColor(messageColor)
-                            .setFooter(formattedDateTime + " *  id:" + matchid)
+                            .setFooter(" * time:" + formattedDateTime + " * id:" + matchid)
                             .addField("Damage", damageString, true)
                             .addField("Economy", economyString, true)
                             .setDescription("Match Duration: "+ matchDuration + "\n" + "\n" + " [Dotabuff](https://www.dotabuff.com/matches/"
