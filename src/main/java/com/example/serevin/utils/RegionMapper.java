@@ -1,12 +1,13 @@
 package com.example.serevin.utils;
 
+import org.springframework.stereotype.Component;
+
 import java.util.HashMap;
 import java.util.Map;
 
-
+@Component
 public class RegionMapper {
     private static final Map<Integer, String> regionMap = new HashMap<>();
-
     static {
         regionMap.put(0, "UNSPECIFIED");
         regionMap.put(1, "US WEST");
@@ -31,7 +32,6 @@ public class RegionMapper {
         regionMap.put(25, "PW UNICOM TIANJIN");
         regionMap.put(37, "ARGENTINA");
     }
-
     public static String getRegion(int regionCode) {
         return regionMap.getOrDefault(regionCode, "UNKNOWN REGION");
     }

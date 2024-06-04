@@ -22,7 +22,7 @@ public class DiscordConfig {
             return jda;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Не удалось инициализировать JDA", e);
+            throw new RuntimeException("No create JDA", e);
         }
     }
 }
