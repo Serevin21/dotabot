@@ -19,12 +19,12 @@ public class ItemServiceImpl implements ItemService {
     private Map<Integer, Item> itemCache;
 
     @Autowired
-    public ItemServiceImpl(RestTemplate restTemplate) {
+    private ItemServiceImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
         loadItems();
     }
     @Scheduled(fixedDelay = 86400000) // 24 hours
-    public void reloadItems() {
+    private void reloadItems() {
         log.info("Reloading items from the API");
         loadItems();
     }

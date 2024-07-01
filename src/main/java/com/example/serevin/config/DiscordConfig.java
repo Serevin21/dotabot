@@ -1,5 +1,6 @@
 package com.example.serevin.config;
 
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Activity;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+@Slf4j
 @Configuration
 public class DiscordConfig {
 
@@ -21,7 +23,7 @@ public class DiscordConfig {
             jda.getPresence().setActivity(Activity.playing("Dota 2"));
             return jda;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("unable to initialize JDA", e);
             throw new RuntimeException("No create JDA", e);
         }
     }

@@ -7,6 +7,7 @@ import com.example.serevin.model.MatchDetailsResponse.PlayerDetail;
 import com.example.serevin.model.MatchResponse.Match;
 import com.example.serevin.repository.PlayerRepository;
 import com.example.serevin.utils.RegionMapper;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -26,6 +27,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 public class MatchUpdateServiceImpl {
     @Autowired
@@ -38,36 +40,72 @@ public class MatchUpdateServiceImpl {
     @Autowired private ImgurServiceImpl imgurService;
     @Autowired private PlayerRankServiceImpl playerRankService;
     @Autowired private RegionMapper regionMapper;
+
     public void updatePlayersMatches(TextChannel channel, List<Player> players) {
         for (Player player : players) {
-            List<Match> matches = matchesService.getPlayerRankedMatches(player.getPlayerId());
             int status = matchesService.getStatusPageAPI(player.getPlayerId()).status();
-
             if(status == 15){
                 EmbedBuilder embedBuilder = new EmbedBuilder()
-                        .setTitle("Игрок " + player.getName() + " закрыл свою историю матчей или не существует.")
+                        .setTitle("Игрок " + player.getName() + " закрыл свою историю матчей или не существует."+ " ID:" + player.getPlayerId())
                         .setColor(Color.RED);
                 channel.sendMessage("").setEmbeds(embedBuilder.build()).queue();
                 playerRepository.delete(player);
-            } else if(!matches.isEmpty() && status == 1 && matches.get(0).match_id() != player.getLastMatchId()){
-                processMatch(player, matches.get(0), channel);
+            } else {
+                List<Match> matches = matchesService.getPlayerRankedMatches(player.getPlayerId());
+                if(!matches.isEmpty() && status == 1 && matches.get(0).match_id() != player.getLastMatchId()){
+                    processMatch(player, matches.get(0), channel);
+                }
             }
         }
     }
 
     private void processMatch(Player player, Match latestMatch, TextChannel channel) {
-        MatchDetailResponse matchDetail = detailService.getMatchDetails(latestMatch.match_id());
-        PlayerDetail playerDetail = matchDetail.players().stream()
-                .filter(p -> player.getPlayerId().equals(p.account_id()))
-                .findFirst()
-                .orElse(null);
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        Optional<MatchDetailResponse> optionalMatchDetail = detailService.getMatchDetails(latestMatch.match_id());
+        if (optionalMatchDetail.isPresent()) {
+            MatchDetailResponse matchDetail = optionalMatchDetail.get();
+            PlayerDetail playerDetail = matchDetail.players().stream()
+                    .filter(p -> player.getPlayerId().equals(p.account_id()))
+                    .findFirst()
+                    .orElse(null);
 
-        if (playerDetail != null) {
-            MessageEmbed message = createMatchMessage(player, playerDetail, matchDetail, latestMatch);
+            if (playerDetail != null) {
+                MessageEmbed message = createMatchMessage(player, playerDetail, matchDetail, latestMatch);
+                channel.sendMessage("").setEmbeds(message).queue();
+                player.setLastMatchId(latestMatch.match_id());
+                playerRepository.save(player);
+            } else {
+                MessageEmbed message = noMatch(player, latestMatch);
+                channel.sendMessage("").setEmbeds(message).queue();
+                player.setLastMatchId(latestMatch.match_id());
+                playerRepository.save(player);
+            }
+        } else {
+            log.warn("No match details found for matchId: {}. Skipping processing.", latestMatch.match_id());
+            MessageEmbed message = noMatch(player, latestMatch);
             channel.sendMessage("").setEmbeds(message).queue();
             player.setLastMatchId(latestMatch.match_id());
             playerRepository.save(player);
         }
+    }
+    private MessageEmbed noMatch(Player player, Match latestMatch){
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Moscow"));
+        String formattedDateTime = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        Color messageColor = Color.MAGENTA;
+        return new EmbedBuilder()
+                .setTitle("Opendota не нашла матч, ID игрока: " + player.getPlayerId()
+                        + "*  ID матча: " + latestMatch.match_id() + "\n" +
+                        "Ошибка исправится после того как Valve починят свое API")
+                .setFooter(" * time:" + formattedDateTime + " * id:" + latestMatch.match_id())
+                .setDescription("\n\n[Dotabuff](https://www.dotabuff.com/matches/"
+                        + latestMatch.match_id() + "), [OpenDota](https://www.opendota.com/matches/"
+                        + latestMatch.match_id() + "), [STRATZ](https://www.stratz.com/match/" + latestMatch.match_id() + ")")
+                .setColor(messageColor)
+                .build();
     }
     private MessageEmbed createMatchMessage(Player player, PlayerDetail playerDetail, MatchDetailResponse matchDetail, Match latestMatch) {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Moscow"));

@@ -10,8 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ChannelServiceImpl implements ChannelService {
-    @Autowired
-    private JDA jda;
+    @Autowired private JDA jda;
     @Value("${discord.id.server}") private String GUILD_ID;
     private static final String CHANNEL_NAME = "dotamatches";
 

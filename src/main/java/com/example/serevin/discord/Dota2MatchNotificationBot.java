@@ -20,8 +20,7 @@ import java.util.List;
 @Component
 public class Dota2MatchNotificationBot extends ListenerAdapter {
     @Value("${discord.id.server}") private String GUILD_ID;
-    @Autowired
-    private JDA jda;
+    @Autowired private JDA jda;
     @Autowired private MatchUpdateServiceImpl matchUpdateService;
     @Autowired private ChannelServiceImpl channelService;
     @Autowired private PlayerRepository playerRepository;

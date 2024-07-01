@@ -1,4 +1,4 @@
-package com.example.serevin.discord.handlers;
+package com.example.serevin.discord;
 
 import com.example.serevin.discord.CommandHandler;
 import jakarta.annotation.PostConstruct;

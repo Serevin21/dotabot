@@ -4,9 +4,12 @@ import com.example.serevin.model.MatchDetailsResponse.MatchDetailResponse;
 import com.example.serevin.service.MatchDetailService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -17,18 +20,32 @@ public class MatchDetailServiceImpl implements MatchDetailService {
         this.restTemplate = restTemplate;
     }
     @Override
-    public MatchDetailResponse getMatchDetails(long matchId) {
+    public Optional<MatchDetailResponse> getMatchDetails(long matchId) {
         String url = baseUrl + matchId;
         try {
             MatchDetailResponse matchDetail = restTemplate.getForObject(url, MatchDetailResponse.class);
             if (matchDetail != null) {
-                return matchDetail;
+                return Optional.of(matchDetail);
             } else {
-                throw new NoSuchElementException("Response from API is null for matchId: " + matchId);
+                log.warn("Response from API is null for matchId: {}", matchId);
+                return Optional.empty();
             }
-        } catch (Exception e){
-            log.error("Error when receiving matchDetail from API for matchId: {}", matchId, e);
-            throw new NoSuchElementException("Failed to get match detail for matchId: " + matchId);
+        } catch (HttpClientErrorException.NotFound e) {
+            // Обработка случая, когда матч не найден (404 Not Found)
+            log.warn("Match not found for matchId: {}. Returning empty response.", matchId);
+            return Optional.empty();
+        } catch (HttpClientErrorException e) {
+            // Обработка других HTTP-ошибок
+            log.error("HTTP error when receiving matchDetail from API for matchId: {}", matchId, e);
+            throw new RuntimeException("HTTP error for matchId: " + matchId + " - " + e.getMessage());
+        } catch (ResourceAccessException e) {
+            // Обработка сетевых проблем
+            log.error("Resource access error when receiving matchDetail from API for matchId: {}", matchId, e);
+            throw new RuntimeException("Failed to access resource for matchId: " + matchId, e);
+        } catch (Exception e) {
+            // Обработка других ошибок
+            log.error("Unexpected error when receiving matchDetail from API for matchId: {}", matchId, e);
+            throw new RuntimeException("Unexpected error for matchId: " + matchId, e);
         }
     }
 }
